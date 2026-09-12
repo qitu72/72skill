@@ -35,9 +35,10 @@
 
 改一处，处处同步。零第三方依赖（纯 Python 标准库），Windows / macOS / Linux 全支持。
 
-- 🗺️ **预置 11 种主流 Agent 的技能库位置**（WorkBuddy / CodeBuddy / AutoClaw / DeepSeek Harness / Claude Code / Codex / Gemini CLI / Cursor / Windsurf / Cline / Roo Code），探测不到的 `add` 一行登记，或往 `data/known_agents.json` 加一条
+- 🗺️ **预置 11 种主流 Agent 的技能库位置**（WorkBuddy / CodeBuddy / DeepSeek Harness / Claude Code / Codex / Gemini CLI / Cursor / Windsurf / Cline / Roo Code / OpenClaw），探测不到的 `add` 一行登记，或往 `data/known_agents.json` 加一条
 - 🛡️ **安全底线写死**：`mtime 新者胜` 双向增量、**绝不删除**（只存在于一端的技能原样保留）、同名冲突**只报告不覆盖**
-- 🧯 `--from` 单向强推是唯一覆盖模式，被替换文件自动存 `.bak-skillsync-<时间戳>`，可回退
+- 🔀 **hub-and-spoke 拓扑（v0.2.0）**：`sync --hub <id>` 以一个库为中枢与其余各库同步，N 端只需 N-1 对——接的 Agent 越多越省
+- 🧯 `--from` 单向强推是唯一覆盖模式，被替换文件自动存 `.bak-skillsync-<时间戳>`，可回退；双端编辑覆盖时打印 `OVERWRITTEN` 报告，不再静默丢失
 - 🤖 **Agent 自集成**：把 `skills/skills-sync/SKILL.md` 装进任意 Agent 的技能库，之后对它说「同步技能库」即可——这个同步技能本身，也由这套工具同步
 
 ```bash
@@ -114,11 +115,42 @@ cd skill-sync && python -m skill_sync discover && cd ..
 按 FAIL 行修，常见两类：STATE 超过 6KB（跑一次收口压缩，细节移 archive）；索引引用断链（补文件或改索引）。tmpdir 段落是清点报告不计分——「在途勿动」的别碰，「可清」的走回收站。
 </details>
 
+## 📋 更新日志
+
+### 2026-09-12 · skills-sync v0.2.0 + skill-hub v1.2.0（分发可用性专项）
+
+对「技能基建」两件套各做了一次全盘排查与修复，主题都是同一句话：**别人下载后要能真正用起来**。
+
+**🔄 skills-sync v0.2.0**（本仓库 `skill-sync/`）——全链路排查发现两个设计级缺陷并修复：
+
+1. **双端编辑静默丢失**：mtime 新者胜的覆盖是静默发生的——你在 A 端和 B 端先后改了同一个技能，B 端的编辑会被 A 端无声覆盖，旧版文档承诺的「冲突报告」实际永不触发。现在：`OVERWRITTEN` 报告精确列出**哪个文件在哪一端被哪一端覆盖**（Python CLI 与 PowerShell 版同步修复）。
+2. **多端拓扑升级 hub-and-spoke**：旧版把所有库两两配对（N 端 = N*(N-1)/2 对），Agent 越多趟数越爆炸。新增 `sync --hub <id>`：以一个库为中枢，N-1 对搞定，任何一端的编辑两步内传遍全网。
+
+配套更新：`skills/skills-sync/SKILL.md` 重写（N 端模型 + 新 Agent 接入指引）；`legacy/sync_skills.ps1` 升级至同语义（配置化多库 `sync_skills.json`、同步前快照、HARD CONFLICT 原地停手）；`skill-sync/README.md` 修复编码损坏并重写。14 项假库端到端测试全过。
+
+**🧩 skill-hub v1.2.0**（姊妹仓库 [dsh-plugins](https://github.com/qitu72/dsh-plugins)——DSH 的技能中心插件，与本工具共享「一套技能多处 Agent 共用」的理念）——审计出 5 个分发断点并全部修复：
+
+1. 只复制文件不注册 bundle → 插件永不加载（新增 `install.ps1` 一键安装，自动注册）
+2. `file:` 依赖指向开发者本机且 tgz 未随仓库分发（tgz 已入库）
+3. 部署脚本硬编码开发机路径（全部参数化）
+4. 技能目录三库写死 → **目录自动发现**：12 种已知 Agent 静态表 + 通用 `<home>/.*/skills` 扫描，未知 Agent 也自动纳管，目录不存在不显示
+5. 内存注入兜底版硬编码用户名 → 从环境解析
+
+### 更早
+
+- 2026-09-07 v0.1.0：skill-sync 首版 + dsh-memory 体系 + 灾备快照机制
+
+---
+
 ## 🗺️ Roadmap
 
+- [x] skill-sync：双端编辑覆盖透明化（v0.2.0 已交付——OVERWRITTEN 报告）
 - [ ] skill-sync：冲突交互式裁决（当前只报告）
 - [ ] dsh-memory：归档员 automation（观察期中，漏写才叠）
 - [ ] dsh-memory：更多平台的底账路径适配文档
+
+---
+
 
 ## 🤝 贡献
 
