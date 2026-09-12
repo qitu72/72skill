@@ -12,18 +12,14 @@
 
 ## 当前进度
 
-> PROTOCOL 三.7 收口态：细节在 archive，此处只留日期＋一句话＋索引。
 
-- 2026-09-06 体系上线＋身份拍板（Agent=思思）→ `archive/2026-09-06-上下文管理方案.md`、`archive/2026-09-06-洁癖同步.md`、`archive/2026-09-06-身份修正.md`
-- 2026-09-07 基建三连＋对话框增强（MR#2/#3）＋AutoClaw 清退 → `archive/2026-09-07-贴图修复与SKILL同步.md`
-- 2026-09-08 收口：PROTOCOL 增补＋verify.ps1＋tmpdir 清扫＋推 72skill（MR 待合并）
-- 2026-09-08 晚 web(3080) 模型预设修复 → `archive/2026-09-08-web模型预设修复.md`
-- 2026-09-08/09 skill-hub 三轮闭环：覆写→置顶(方案A)→引用条隐藏/行内灰底/按钮兜底→**lexicon source 正解**（@技能名灰底 pill；带点号名受核心正则限制）；MR feat/skill-hub-skill-first 待合并。companion 撞车→休眠对齐（兼容构建留档 `repos/dsh-companion-fix/`）→ `archive/2026-09-08-skillhub覆写修复.md`
-- 2026-09-09 插件修复日：modlens 3.26.1＋dsh-automation 0.1.7＋companion 保持休眠＋kb automation 迁移解释器 → `archive/2026-09-09-DSH插件升级与自动化修复.md`
+- 2026-09-06~09 体系上线/身份拍板（思思）/基建三连/AutoClaw 清退/web 预设修复/skill-hub v1.1.0（MR#5 已并）/GitHub 镜像/插件修复日 → 各见 `archive/2026-09-06~09` 对应文件
+- 2026-09-10 桌面端侧边卡片按钮重叠修复（better-sidebar titlebar-inset 补丁+doctor 第 10 项）→ `archive/2026-09-10-侧边卡片按钮重叠修复.md`；同日装 human-writing skill v1.1.0（skill-vetter 🟢 LOW，三端同步）
+- 2026-09-12 skill-hub **v1.2.0**（MR#6 已并 main=bd28992，GitHub 镜像同步，重启后实测 7 组/404 技能）＋ skills-sync **v2**（任意多端 hub-and-spoke、修复静默覆盖缺陷、16 场景测试全过）；游离库 .agents/.qoderwork **已按兔兔拍板删除进回收站**（哈希验证零丢失；openclaw 28 junction 断链=遗留视图清零）→ 均见 `archive/2026-09-12-skill-hub-v1.2.0.md`
 
 ## 下一步
 
-1. 各项目按其窗口自治推进（三星堆=总监制.md；本 STATE 不记项目进度）
+1. 各项目按其窗口自治推进（进度以各自状态文件为准）
 2. 仪表 ~80% 触发收口（PROTOCOL 三.3）
 3. 归档员观察期（1-2 周）：archive 漏写再叠
 
@@ -45,9 +41,10 @@
 - [ ] 归档员观察期 1-2 周（archive 漏写则叠）
 - [ ] `dsh-schedule` 结算 bug（面板红标误报，实质工作不受影响）待维护窗口修（引自 9/7 深夜）
 - [ ] DSH 桌面端择机重启刷新模型路由（现端旧路由假活，见 9/8 晚 archive）
-- [ ] 备份目录 `~/.dsh/backups/web-profile-nm-cleanup-20260908/`（230 项）观察一周无异常后清（见 9/8 晚 archive §五）；**已设 2026-09-15 12:00 automation 提醒**（`automation_a3a8e00b-abf8-469e-8eba-62f57d8e0872`，read-only，到点先核验 web 健康再问兔兔是否清，不自动删）
-- [ ] 会话残留候选：A 组（tmp 日志修复产物 4 件）已兔兔确认清场（9/8 晚）；B 组（根部 fix-session/diagnose 等 10 件）兔兔选择暂不清，留待下次裁决
-- [ ] 两条 kb automation（22:00 归档 / 22:30 摘要）解释器已对齐 `tools/runtime/python312`（09-07 既有约定），今晚首跑验证 `no_turn_result` 是否消失；思兔摘要 prompt 已内置维护协议（rev 5：文件缺失不代建）；dsh-automation 滚动补丁已随 0.1.7 重打（见 9/9 archive §④⑤⑥）
+- [ ] 备份目录 `~/.dsh/backups/web-profile-nm-cleanup-20260908/`（230 项）观察一周无异常后清；已设 2026-09-15 12:00 automation 提醒（read-only，到点先核验再问兔兔，不自动删）
+- [ ] 会话残留 B 组（根部 fix-session/diagnose 等 10 件）暂不清，留待下次裁决（A 组已清）
+- [ ] （可选）向上游报 better-sidebar titlebar-inset issue（证据见 9/10 archive）；补丁已本地固化
+- [ ] kb automation 解释器/摘要 prompt rev5/滚动补丁验证 → 细节见 `archive/2026-09-09-DSH插件升级与自动化修复.md` §④⑤⑥
 
 ## 索引
 
@@ -57,5 +54,8 @@
 - `archive/2026-09-06-洁癖同步.md` — 六事实面核验、残留清点、清场与提案落地全记录
 - `archive/2026-09-06-身份修正.md` — Agent 身份=思思的拍板记录、AGENTS/SOUL 修订明细与漂移风险
 - `archive/2026-09-07-贴图修复与SKILL同步.md` — SKILL 副本同步修复 + 贴图 Ctrl+V 补丁 + skill-sync 迁仓 + 对话框增强 + AutoClaw 清退（§A-§K）
+- `archive/2026-09-08-skillhub覆写修复.md` — skill-hub v1.1.0 三轮闭环（覆写→置顶→lexicon source）
+- `archive/2026-09-09-github镜像同步.md` — GitHub 只读镜像机制与一键脚本
+- `archive/2026-09-12-skill-hub-v1.2.0.md` — 分发审计 5 断点、四级目录发现、install.ps1、构建断链修复与遗留清单
 - `~/.dsh/sessions/--D-aolong--/` — D:\aolong 主窗口底账（如有）
 - `~/.dsh/sessions/--D-aolong-72--/` — 本窗口（72）底账
