@@ -11,7 +11,7 @@ from . import agents as agents_mod
 from . import registry as registry_mod
 from . import sync as sync_mod
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 
 # --------------------------------------------------------------------------
@@ -263,16 +263,34 @@ def cmd_sync(args: argparse.Namespace) -> int:
             _err(f"failed: {f}")
         return 1 if res["failed"] else 0
 
-    _head(f"Two-way sync across {len(roots)} libraries (newer mtime wins)")
+    hub: Optional[Path] = None
+    if args.hub:
+        hub_a = registry_mod.find_agent(reg, args.hub)
+        if not hub_a:
+            _err(f"unknown hub: {args.hub}")
+            return 2
+        hub = Path(hub_a["path"]).resolve()
+        if hub not in [r.resolve() for r in roots]:
+            _err(f"hub is not a registered library: {hub}")
+            return 2
+
+    if hub is not None:
+        _head(
+            f"Two-way sync, hub-and-spoke: {hub_a['name']} <-> "
+            f"{len(roots) - 1} other(s) (newer mtime wins)"
+        )
+    else:
+        _head(f"Two-way sync across {len(roots)} libraries (newer mtime wins)")
     if dry:
         _warn("dry run -- nothing will be written")
-    results = sync_mod.sync_all(roots, excl, dry_run=dry, deep=args.deep)
+    results = sync_mod.sync_all(roots, excl, dry_run=dry, deep=args.deep, hub=hub)
 
     total = 0
     conflicts: List[str] = []
+    overwritten: List[str] = []
     for r in results:
         total += r.total
-        if r.total or r.conflicts or r.failed:
+        if r.total or r.conflicts or r.failed or r.overwritten:
             print(
                 f"\n  {Path(r.a).name} <-> {Path(r.b).name}: "
                 f"+{len(r.copied_a_to_b)} / -{len(r.copied_b_to_a)}"
@@ -284,17 +302,27 @@ def cmd_sync(args: argparse.Namespace) -> int:
         for f in r.failed:
             _err(f"failed: {f}")
         conflicts.extend(f"{Path(r.a).name}|{Path(r.b).name}|{c}" for c in r.conflicts)
+        overwritten.extend(r.overwritten)
 
     _head("Done")
     print(f"  files copied : {total}")
     if dry:
         _warn("dry run -- nothing was written")
+    if overwritten:
+        _head("OVERWRITTEN -- both ends were edited; newer mtime won")
+        for o in overwritten:
+            print(f"  - {o}")
+        _warn(
+            "The older edit is gone. If that loss matters, recover it from a"
+            " backup and re-run with --deep, or use 'sync --from <id>'"
+            " to pick the authoritative side explicitly."
+        )
     if conflicts:
         _head("CONFLICTS -- not overwritten, resolve by hand")
         for c in dict.fromkeys(conflicts):
             print(f"  - {c}")
         _warn("These files still differ after sync (same mtime, different content).")
-        return 1
+        return 1 if conflicts else 0
     _ok("all libraries consistent")
     return 0
 
@@ -348,6 +376,7 @@ def build_parser() -> argparse.ArgumentParser:
     sy = sub.add_parser("sync", help="sync registered libraries")
     sy.add_argument("--dry-run", action="store_true", help="show what would change")
     sy.add_argument("--from", dest="source", help="one-way: force this library onto the others")
+    sy.add_argument("--hub", help="hub-and-spoke: sync this library against each other one (N-1 pairs)")
     sy.add_argument("--no-backup", action="store_true", help="skip .bak copies in --from mode")
     sy.add_argument(
         "--deep",

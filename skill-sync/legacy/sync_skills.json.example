@@ -1,0 +1,16 @@
+{
+  "_comment": [
+    "Optional config for legacy/sync_skills.ps1 (the PowerShell sync).",
+    "Copy it next to the script as sync_skills.json, then edit legs.",
+    "  canonical : the library you edit by default (omit = ~/.workbuddy/skills)",
+    "  legs      : every other library to keep in sync - add one line per agent",
+    "  autoDiscover: true = only REPORT unmanaged <home>/.*/skills libs, never auto-join",
+    "~ expands to the home directory; relative paths resolve against the script folder."
+  ],
+  "canonical": "~/.workbuddy/skills",
+  "legs": [
+    "~/.dsh/skills",
+    "~/.codebuddy/skills"
+  ],
+  "autoDiscover": false
+}
