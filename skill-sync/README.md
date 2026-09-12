@@ -1,6 +1,6 @@
-﻿# skill-sync
+# skill-sync
 
-> 涓€濂楁妧鑳藉簱锛屽澶?AI Agent 鍏辩敤銆傛敼涓€澶勶紝澶勫鍚屾銆?>
+> 一套技能库，多处 AI Agent 共用。改一处，处处同步。
 > Keep **one** skill library in sync across **many** AI agents.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
@@ -9,49 +9,55 @@
 
 ---
 
-## 涓轰粈涔堥渶瑕佸畠 / Why
+## 为什么需要它 / Why
 
-鐜板湪鍚屾椂鐢ㄥ涓?AI Agent 鏄父鎬侊細Claude Code銆丆odex銆乄orkBuddy銆丆odeBuddy銆丄utoClaw銆丆ursor鈥︹€?*姣忎釜 Agent 鍚勮嚜缁存姢涓€浠借嚜宸辩殑 skill 鐩綍**銆?
-浜庢槸鍚屼竴涓?`SKILL.md` 鍦ㄤ綘鐨勬満鍣ㄤ笂瀛樺湪 N 浠藉壇鏈€傛敼浜嗗叾涓竴浠斤紝鍏朵粬鍑犱唤涓嶄細鑷姩璺熺潃鍙樷€斺€旀椂闂翠竴闀匡紝鍚勭鐨勬妧鑳界増鏈紑濮嬫紓绉伙紝浣犱細閬囧埌锛?
-- 鍦?A 瀹㈡埛绔慨濂界殑鎶€鑳斤紝鍒?B 瀹㈡埛绔繕鏄棫鐗?- 鍚屽悕 `SKILL.md` 鍐呭涓嶄竴鑷达紝鍗存病浜虹煡閬撹淇″摢浠?- 鎵嬪伐澶嶅埗绮樿创锛岃繜鏃╂紡鎺変竴涓?
-`skill-sync` 鎶婅繖浠朵簨鍙樻垚涓€鏉″懡浠ゃ€?
-**璁捐鍓嶆彁锛氭瘡涓汉鐨?Agent 缁勫悎閮戒笉涓€鏍枫€?* 鎵€浠ユ湰宸ュ叿**涓嶇‖缂栫爜浠讳綍璺緞**鈥斺€斿畠鍏堝仛涓€娆°€屾暟鎹敹闆嗐€嶏紙`discover`锛夋帰娴嬩綘鏈哄櫒涓婄湡瀹炲瓨鍦ㄧ殑 Agent 鎶€鑳藉簱锛屾妸缁撴灉瀛樿繘娉ㄥ唽琛紝涔嬪悗鎵€鏈夊悓姝ユ寜娉ㄥ唽琛ㄨ蛋銆?
+现在同时用多个 AI Agent 是常态：Claude Code、Codex、WorkBuddy、CodeBuddy、Cursor……**每个 Agent 各自维护一份自己的 skill 目录**。
+于是同一个 `SKILL.md` 在你的机器上存在 N 份副本。改了其中一份，其他几份不会自动跟着变——时间一长，各端的技能版本开始漂移，你会遇到：
+- 在 A 客户端修好的技能，到 B 客户端还是旧版
+- 同名 `SKILL.md` 内容不一致，却没人知道该信哪份
+- 手工复制粘贴，迟早漏掉一个
+
+`skill-sync` 把这件事变成一条命令。
+
+**设计前提：每个人的 Agent 组合都不一样。** 所以本工具**不硬编码任何路径**——它先做一次「数据收集」（`discover`）探测你机器上真实存在的 Agent 技能库，把结果存进注册表，之后所有同步按注册表走。
+
 ---
 
-## 瀹夎 / Install
+## 安装 / Install
 
-闆剁涓夋柟渚濊禆锛屾爣鍑嗗簱鍗冲彲杩愯銆?
+零第三方依赖，标准库即可运行。
 ```bash
-# 鏂瑰紡涓€锛氫笉瀹夎锛岀洿鎺ヨ窇锛堟帹鑽愬厛璇曡繖涓級
+# 方式一：不安装，直接跑（推荐先试这个）
 git clone https://cnb.cool/72boom/72skill.git && cd 72skill/skill-sync
 python -m skill_sync discover
 
-# 鏂瑰紡浜岋細瀹夎鍚庣敤鍛戒护
+# 方式二：安装后用命令
 pip install .
 skill-sync discover
 ```
 
-> Windows 鐢ㄦ埛涔熷彲鐢?`py -m skill_sync`銆?
+> Windows 用户也可用 `py -m skill_sync`。
 ---
 
-## 蹇€熷紑濮?/ Quick start
+## 快速开始 / Quick start
 
 ```bash
-# 1. 鏁版嵁鏀堕泦锛氭帰娴嬫湰鏈烘湁鍝簺 Agent 鎶€鑳藉簱锛堜氦浜掑紡鍕鹃€夛級
+# 1. 数据收集：探测本机有哪些 Agent 技能库（交互式勾选）
 skill-sync discover
 
-# 2. 鐪嬬湅鍚勭婕傜Щ鎯呭喌锛堝彧璇伙紝涓嶆敼鍔ㄤ换浣曟枃浠讹級
+# 2. 看看各端漂移情况（只读，不改动任何文件）
 skill-sync status
 
-# 3. 鍚屾
-skill-sync sync --dry-run    # 鍏堝共璺戯紝鐪嬩細鏀逛粈涔?skill-sync sync              # 纭鏃犺鍚庣湡璺?```
+# 3. 同步
+skill-sync sync --dry-run    # 先干跑，看会改什么
+skill-sync sync              # 确认无误后真跑
+```
 
-`discover` 浼氭壂鎻忓凡鐭?Agent 鐨勫父瑙佷綅缃紝渚嬪锛?
-| Agent | 榛樿璺緞 |
+`discover` 会扫描已知 Agent 的常见位置，例如：
+| Agent | 默认路径 |
 |---|---|
 | WorkBuddy | `~/.workbuddy/skills` |
 | CodeBuddy | `~/.codebuddy/skills` |
-| AutoClaw / OpenClaw | `~/.openclaw-autoclaw/skills` |
 | DeepSeek Harness | `~/.dsh/skills` |
 | Claude Code | `~/.claude/skills` |
 | Codex CLI | `~/.codex/skills` |
@@ -60,54 +66,66 @@ skill-sync sync --dry-run    # 鍏堝共璺戯紝鐪嬩細鏀逛粈涔?skill-syn
 | Windsurf | `~/.windsurf/skills` |
 | Cline | `~/.cline/skills` |
 | Roo Code | `~/.roo/skills` |
+| OpenClaw（旧名）/ AutoClaw | `~/.openclaw/skills`、`~/.openclaw-autoclaw/skills` |
 
-鎺㈡祴涓嶅埌鐨勶紵鎵嬪伐鐧昏鍗冲彲锛?
+探测不到的？手动登记即可：
 ```bash
 skill-sync add ~/some/agent/skills --name "My Agent"
 ```
 
 ---
 
-## 鍛戒护 / Commands
+## 命令 / Commands
 
-| 鍛戒护 | 浣滅敤 |
+| 命令 | 作用 |
 |---|---|
-| `discover` | **鏁版嵁鏀堕泦**锛氭壂鎻忔湰鏈哄凡鐭?Agent 鎶€鑳藉簱锛屼氦浜掑紡纭鍚庡啓鍏ユ敞鍐岃〃 |
-| `list` | 鍒楀嚭宸茬櫥璁扮殑搴撳強鍏舵妧鑳芥暟閲?|
-| `status` | 鍙鎶ュ憡锛氬摢浜涙枃浠朵竴鑷?/ 缂哄け / 鍐呭鍐茬獊 |
-| `sync` | 鍙屽悜澧為噺鍚屾锛坢time 鏂拌€呰儨锛?|
-| `sync --dry-run` | 骞茶窇锛屽彧鐪嬩細鏀逛粈涔?|
-| `sync --from <id>` | 鍗曞悜锛氫互鎸囧畾搴撲负鍑嗗己鍒惰鐩栧叾浠栧簱锛堜細鍏堝浠斤級 |
-| `add <path>` | 鎵嬪伐鐧昏涓€涓妧鑳藉簱 |
-| `remove <key>` | 浠庢敞鍐岃〃绉婚櫎锛堝彧绉婚櫎鐧昏锛屼笉鍒犳枃浠讹級 |
+| `discover` | **数据收集**：扫描本机已知 Agent 技能库，交互式确认后写入注册表 |
+| `list` | 列出已登记的库及其技能数量 |
+| `status` | 只读报告：哪些技能一致 / 缺失 / 内容冲突 |
+| `sync` | 双向增量同步（mtime 新者胜） |
+| `sync --dry-run` | 干跑，只看会改什么 |
+| `sync --hub <id>` | **hub-and-spoke**：以指定库为中枢与其余各库两两同步，N 端只需 N-1 对 |
+| `sync --from <id>` | 单向：以指定库为准强制覆盖其他库（会先备份） |
+| `add <path>` | 手动登记一个技能库 |
+| `remove <key>` | 从注册表移除（只移除登记，不删文件） |
 
-娉ㄥ唽琛ㄤ綅缃細`~/.skill-sync/registry.json`锛堝彲鐩存帴缂栬緫锛屼篃鍙敤 `SKILL_SYNC_HOME` 鐜鍙橀噺鏀逛綅缃級銆?
+注册表位置：`~/.skill-sync/registry.json`（可直接编辑，也可用 `SKILL_SYNC_HOME` 环境变量改位置）。
+
 ---
 
-## 鍚屾瑙勫垯 / Rules
+## 同步规则 / Rules
 
-杩欏嚑鏉℃槸鍒绘剰璁捐鐨勶紝涔熸槸鏈伐鍏风殑瀹夊叏搴曠嚎锛?
-1. **mtime 鏂拌€呰儨** 鈥斺€?鍙屽悜澧為噺鍚屾锛屼慨鏀规椂闂存洿鏂扮殑鐗堟湰瑕嗙洊鏃х殑銆備笉鍋氬唴瀹瑰悎骞躲€?2. **缁濅笉鍒犻櫎** 鈥斺€?鍙瓨鍦ㄤ簬鏌愪竴绔殑鎶€鑳戒細鍘熸牱淇濈暀銆傝繖鏄负浠€涔堟垜浠笉鎻愪緵 `--mirror`锛氬悇 Agent 鏈潵灏辨湁鑷繁鐙湁鐨勬妧鑳斤紝闈欓粯鍒犻櫎鏄伨闅俱€?3. **鍐茬獊缁濅笉闈欓粯瑕嗙洊** 鈥斺€?鍚屾鍚庝細鍐嶆牎楠屼竴娆″搱甯岋紱鑻ュ悓鍚嶆枃浠跺唴瀹逛粛涓嶄竴鑷达紙渚嬪 mtime 鐩稿悓浣嗗唴瀹逛笉鍚岋級锛?*鍙姤鍛娿€佷笉瑕嗙洊**锛屼氦缁欎綘浜哄伐瑁佸喅銆?4. **璺宠繃瀹㈡埛绔厓鏁版嵁** 鈥斺€?`*.bundled-hash`銆乣_user_meta.json`銆乣_bm_skillid_migration.json*`銆乣.DS_Store`銆乣__pycache__` 绛変笉鍙備笌鍚屾锛岄伩鍏嶄簰鐩告薄鏌撳悇瀹㈡埛绔殑鍚敤鐘舵€併€?5. **涓嶈窡闅忕鍙烽摼鎺?/ junction** 鈥斺€?鏈変簺 Agent 浼氱敤 junction 浜掔浉鎸囧悜锛岃窡闅忎細閫犳垚鏃犻檺閬嶅巻鎴栭噸澶嶅啓鍏ワ紝涓€寰嬭烦杩囥€?
-`--from` 鍗曞悜妯″紡鏄?*鍞竴浼氳鐩栬緝鏂版枃浠?*鐨勬ā寮忥紝鍥犳瀹冧細鍏堟妸琚浛鎹㈢殑鏂囦欢瀛樹负 `.bak-skillsync-<鏃堕棿鎴?`锛岀‘淇濆彲鍥為€€銆?
+这几条是刻意设计的，也是本工具的安全底线：
+1. **mtime 新者胜** —— 双向增量同步，修改时间更新的版本覆盖旧的。不做内容合并。
+2. **绝不删除** —— 只存在于某一端的技能会原样保留。这就是为什么我们不提供 `--mirror`：各 Agent 本来就有自己独有的技能，静默删除是灾难。
+3. **双端编辑透明化（v0.2.0 新增）** —— 同一个文件在两端都有实质编辑（大小不同）时，新者胜照常执行，但会打印 `OVERWRITTEN` 报告，**精确指出哪一端的哪个文件被哪一端覆盖**，不再静默丢失。
+4. **歧义绝不覆盖** —— mtime 相同但内容不同（或 `--deep` 哈希不符）的文件：**只报告、不覆盖**，交给你人工裁决。
+5. **跳过客户端元数据** —— `*.bundled-hash`、`_user_meta.json`、`_bm_skillid_migration.json*`、`.DS_Store`、`__pycache__` 等不参与同步，避免互相污染各客户端的启用状态。
+6. **不跟随符号链接 / junction** —— 有些 Agent 会用 junction 互相指向，跟随会造成无限遍历或重复写入，一律跳过。
+
+`--from` 单向模式是*唯一会覆盖较新文件*的模式，因此它会先把被替换的文件存为 `.bak-skillsync-<时间戳>`，确保可回退。
+
 ---
 
-## 璁?Agent 鑷繁璋冪敤 / Agent integration
+## 让 Agent 自己调用 / Agent integration
 
-`skills/skills-sync/SKILL.md` 鏄竴涓幇鎴愮殑鎶€鑳藉畾涔夛紝瑁呰繘浣犵殑 Agent 鎶€鑳藉簱鍚庯紝鐩存帴瀵?Agent 璇淬€屽悓姝ユ妧鑳藉簱銆嶅嵆鍙Е鍙戙€?
+`skills/skills-sync/SKILL.md` 是一个现成的技能定义，装进你的 Agent 技能库后，直接对 Agent 说「同步技能库」即可触发。
 ```bash
-# 鎶婃妧鑳藉畾涔夋斁杩涙煇涓?Agent锛堢劧鍚?sync 涓€娆★紝瀹冨氨鑷姩鍒嗗彂鍒版墍鏈夌锛?mkdir -p ~/.claude/skills/skills-sync
+# 把技能定义放进某个 Agent（然后 sync 一次，它就自动分发到所有端）
+mkdir -p ~/.claude/skills/skills-sync
 cp skills/skills-sync/SKILL.md ~/.claude/skills/skills-sync/
 skill-sync sync
 ```
 
-鏈夌偣鑷妇鐨勫懗閬擄細杩欎釜鍚屾鎶€鑳芥湰韬紝涔熺敱杩欏宸ュ叿鍚屾銆?
+有点自举的味道：这个同步技能本身，也由这套工具同步。
+
 ---
 
-## 鏂板涓€涓?Agent / Contributing an agent
+## 新增一个 Agent / Contributing an agent
 
-濡傛灉浣犵敤鐨?Agent 涓嶅湪涓婇潰鐨勮〃閲岋紝鏈変袱绉嶆柟寮忥細
+如果你用的 Agent 不在上面的表里，有两种方式：
 
-**1. 鏈湴鎵╁睍锛堟棤闇€鏀逛唬鐮侊級** 鈥斺€?缂栬緫 `data/known_agents.json`锛?
+**1. 本地扩展（无需改代码）** —— 编辑 `data/known_agents.json`：
 ```json
 {
   "agents": [
@@ -116,26 +134,60 @@ skill-sync sync
 }
 ```
 
-**2. 鎻?PR** 鈥斺€?鐩存帴寰€ `skill_sync/agents.py` 鐨?`KNOWN_AGENTS` 鍔犱竴琛岋紝璁╂墍鏈変汉鍙楃泭銆?
-`path` 鏀寔鍗犱綅绗︼細`{home}`锛堢敤鎴蜂富鐩綍锛夈€乣{cwd}`锛堝綋鍓嶇洰褰曪級銆?
+**2. 提 PR** —— 直接往 `skill_sync/agents.py` 的 `KNOWN_AGENTS` 加一行，让所有人受益。
+`path` 支持占位符：`{home}`（用户主目录）、`{cwd}`（当前目录）。
+
 ---
 
-## 骞冲彴鏀寔 / Platforms
+## Windows PowerShell 免 Python 版 / legacy
 
-| 骞冲彴 | 鏀寔 | 璇存槑 |
+`legacy/sync_skills.ps1` 是一个不依赖 Python 的 PowerShell 实现（v0.2.0 与 Python 版语义对齐）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\scripts\sync_skills.ps1"
+```
+
+- 技能库列表来自同目录的 `sync_skills.json`（示例见 `legacy/sync_skills.json.example`）——**加一个 Agent = 加一行路径**；没有配置文件时默认三库拓扑（`~/.dsh` `~/.codebuddy` `~/.workbuddy`）。
+- 同步前快照：先列出跨端有差异的技能；mtime 相同且内容不同 → `HARD CONFLICT` 原地停手（exit 2），什么文件都不碰。
+- `OVERWRITTEN` 透明报告与 Python 版同语义。
+
+---
+
+## 平台支持 / Platforms
+
+| 平台 | 支持 | 说明 |
 |---|---|---|
-| Windows | 鉁?| 宸插鐞?junction 涓庣洏绗﹁矾寰?|
-| macOS | 鉁?| |
-| Linux | 鉁?| |
-| iOS / Android | 鉂?| 绉诲姩绔矙鐩掗噷 App 涔嬮棿鐩綍浜掍笉鍙锛屼篃娌℃湁甯歌缁堢锛屾棤娉曞仛璺?App 鐩綍鍚屾 |
+| Windows | ✅ | 已处理 junction 与盘符路径 |
+| macOS | ✅ | |
+| Linux | ✅ | |
+| iOS / Android | ❌ | 移动端沙盒里 App 之间目录互不可见，也没有常规终端，无法做跨 App 目录同步 |
 
 ---
 
-## 瀹夊叏 / Safety
+## 安全 / Safety
 
-- 榛樿**鍙涓嶅垹**锛涘敮涓€浼氳鐩栫殑鏄€屽悓涓€鏂囦欢銆佸绔洿鏃с€嶇殑鎯呭喌銆?- 鍐茬獊涓€寰嬫姤鍛婏紝涓嶈嚜鍔ㄨ鍐炽€?- `--from` 鏄敮涓€寮哄埗妯″紡锛屼細鑷姩澶囦唤琚浛鎹㈡枃浠躲€?- 寤鸿棣栨浣跨敤鍏堣窇 `status` 鍜?`sync --dry-run`锛岀湅娓呬細鍙戠敓浠€涔堝啀鐪熻窇銆?- 鎶€鑳藉簱閲屽鏋滄湁浣犵殑绉佸瘑鍐呭锛屾敞鎰忓悓姝ヤ細鎶婂畠鍦ㄥ涓鎴风涔嬮棿鎽婂钩銆?
+- 默认**只增不删**；唯一会覆盖的是「同一文件、对端更新」的情况——v0.2.0 起会打印 `OVERWRITTEN` 报告。
+- 冲突一律报告，不自动裁决。
+- `--from` 是唯一强制模式，会自动备份被替换文件。
+- 建议首次使用先跑 `status` 和 `sync --dry-run`，看清会发生什么再真跑。
+- 技能库里如果有你的私密内容，注意同步会把它在多个客户端之间摊平。
+
 ---
 
-## 璁稿彲 / License
+## 更新日志 / Changelog
 
-MIT 鈥斺€?瑙?[LICENSE](LICENSE)銆?
+### v0.2.0 (2026-09-12)
+- `sync --hub <id>`：hub-and-spoke 拓扑——以一个库为中枢与其余各库同步，N 端从 N*(N-1)/2 对降为 N-1 对；任何一端的更新两步内传遍全网。
+- `OVERWRITTEN` 透明报告：双端都编辑过同一文件时，精确列出哪一端的文件被哪一端覆盖（旧版静默丢失）。
+- 冲突语义修正：quick 指纹（size+mtime）下「同 mtime 不同 size」不再被误当覆盖，而是作为冲突报告、文件不动。
+- `skills/skills-sync/SKILL.md` 重写：N 端模型、新 Agent 接入指引、v2 输出语义。
+- `legacy/sync_skills.ps1` 升级至与 Python 版同语义（配置化多库 + 同步前快照 + HARD CONFLICT 停手 + OVERWRITTEN 报告），并附 `sync_skills.json.example`。
+
+### v0.1.0 (2026-09-07)
+- 首版：discover / status / sync / --from / --dry-run / --deep，注册表持久化，11+ Agent 预置目录表，JSON 扩展目录。
+
+---
+
+## 许可 / License
+
+MIT —— 见 [LICENSE](LICENSE)。

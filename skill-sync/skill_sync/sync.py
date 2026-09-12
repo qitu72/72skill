@@ -114,6 +114,11 @@ class PairResult:
     copied_b_to_a: List[str] = field(default_factory=list)
     failed: List[str] = field(default_factory=list)
     conflicts: List[str] = field(default_factory=list)
+    # Files that existed on BOTH sides with different sizes (or, in deep mode,
+    # different content) before the copy - i.e. both ends were edited and the
+    # newer mtime silently replaced the older edit. Reported so a silent loss
+    # becomes a visible line ("overwritten: <file> on <loser> by <winner>").
+    overwritten: List[str] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -166,11 +171,21 @@ def sync_pair(
 
         # size or mtime differs: newer mtime wins
         if ka[1] > kb[1]:
+            # different SIZES on both sides = both ends were really edited
+            # (a bare mtime touch keeps the size); surface the loss.
+            if ka[0] != kb[0] or (deep and file_hash(sa) != file_hash(sb)):
+                res.overwritten.append(
+                    f"{rel}: '{Path(b).name}' was overwritten by '{Path(a).name}'"
+                )
             if _copy(sa, sb, dry_run):
                 res.copied_a_to_b.append(rel)
             else:
                 res.failed.append(rel)
         elif kb[1] > ka[1]:
+            if ka[0] != kb[0] or (deep and file_hash(sa) != file_hash(sb)):
+                res.overwritten.append(
+                    f"{rel}: '{Path(a).name}' was overwritten by '{Path(b).name}'"
+                )
             if _copy(sb, sa, dry_run):
                 res.copied_b_to_a.append(rel)
             else:
@@ -193,8 +208,24 @@ def sync_all(
     excludes: Iterable[str],
     dry_run: bool = False,
     deep: bool = False,
+    hub: Optional[Path] = None,
 ) -> List[PairResult]:
+    """Sync *roots* pairwise, or hub-and-spoke when *hub* is given.
+
+    Pairwise (default): every unordered pair syncs once - the classic N*(N-1)/2
+    topology.  Hub-and-spoke (``hub`` set): the hub pairs with each other root,
+    N-1 pairs total; an edit anywhere reaches the hub first and then every
+    other end, which converges to the same state with far fewer runs when many
+    agents are registered.
+    """
     results: List[PairResult] = []
+    if hub is not None:
+        others = [r for r in roots if r.resolve() != hub.resolve()]
+        for r in others:
+            results.append(
+                sync_pair(hub, r, excludes, dry_run=dry_run, deep=deep)
+            )
+        return results
     for i in range(len(roots)):
         for j in range(i + 1, len(roots)):
             results.append(
